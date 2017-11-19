@@ -1,16 +1,13 @@
 #!/usr/bin/env python
 
-import os
-
 import pytomo3d.signal
 import pyasdf
 
-from util import dirname, setup_mpi, event_stats
+from os.path import join
+from util import dirname, event_stats, Struct
 
-from mpi4py import MPI
 
-
-parameters = {
+parameters_obs = {
     'remove_response_flag': True,
     'water_level': 100.0,
     'filter_flag': True,
@@ -26,23 +23,49 @@ parameters = {
     }
 
 
-if __name__=='__main__':
+parameters_syn = {
+    'remove_response_flag': False,
+    'filter_flag': True,
+    'pre_filt': [0.0067, 0.01, 0.02, 0.025],
+    'starttime': 0,
+    'endtime': 6000,
+    'resample_flag': True,
+    'sampling_rate': 5,
+    'taper_type': "hann",
+    'taper_percentage': 0.05,
+    'rotate_flag': True,
+    'sanity_check': False,
+    }
+
+
+paths_obs = Struct({
+    'input' : '../data/C200912240023A.obs.h5',
+    'output' : '../data/C200912240023A.obs_bp.h5',
+    })
+
+
+paths_syn = Struct({
+    'input' : '../data/C200912240023A.syn.h5',
+    'output' : '../data/C200912240023A.syn_bp.h5',
+    })
+
+
+def process_traces(parameters, paths):
     # this example must be invoked with MPI
-    # e.g. mpiexec -np NP process_traces_asdf.py
-    setup_mpi()
+    # e.g. mpiexec -n NP process_traces_asdf.py
+    from mpi4py import MPI
 
-    # specify paths
-    path = dirname(__file__)
-    filename = os.path.join(path, "../data/C200912240023A.observed.h5")
+    cwd = dirname(__file__)
 
-    # read data set
-    ds = pyasdf.ASDFDataSet(filename, compression=None, mode="a")
-    latitude, longitude, origin_time = event_stats(ds)
+    # read data
+    fullpath = join(cwd, paths.input)
+    ds = pyasdf.ASDFDataSet(fullpath, compression=None, mode="a")
+    event = ds.events[0]
 
     # add event information
+    latitude, longitude, origin_time = event_stats(ds)
     parameters['event_longitude'] = longitude
     parameters['event_latitude'] = latitude
-
     parameters['starttime'] = origin_time + parameters['starttime']
     parameters['endtime'] = origin_time + parameters['endtime']
 
@@ -51,9 +74,15 @@ if __name__=='__main__':
         parameters.update({"inventory": inventory})
         return pytomo3d.signal.process_stream(stream, **parameters)
 
-    # process data set
+    # process data
     ds.process(wrapped_function,
-        filename+'.bp',
-        {'observed': 'observed_bp_50_100'})
+        paths.output,
+        {'observed': 'processed'})
+
     del ds
+
+
+if __name__=='__main__':
+    process_traces(parameters_obs, paths_obs)
+    #process_traces(parameters_syn, paths_syn)
 

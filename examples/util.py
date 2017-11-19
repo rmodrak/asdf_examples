@@ -1,8 +1,9 @@
 
-# this module exists solely for convenience
-# eventually, many utilities will be moved elsewhere
+# this module exists for temporary convenience
+# eventually, utilities will be moved to pytomo3d
 
-
+import copy
+import json
 import os
 
 
@@ -15,24 +16,52 @@ def event_stats(ds):
     return origin.latitude, origin.longitude, origin.time
 
 
-def is_mpi_env():
-    """
-    Test if current environment is MPI or not
-    """
-    try:
-        import mpi4py
-    except ImportError:
-        return False
+def write_windows_json(filename, unparsed):
+    from pytomo3d.window.io import get_json_content, WindowEncoder
 
-    try:
-        import mpi4py.MPI
-    except ImportError:
-        return False
+    # create nested dictionaries
+    parsed = {}
+    for station, traces in _items(unparsed):
+        parsed[station] = {}
+        for trace, windows in _items(traces):
+            parsed[station][trace] = []
 
-    return True
+    # fill in dictionaries
+    for station, traces in _items(unparsed):
+        for trace, windows in _items(traces):
+            for window in windows:
+                parsed[station][trace] += [get_json_content(window)]
+
+    # write dictionaries to json
+    with open(filename, 'w') as fh:
+        fh.write(json.dumps(parsed,
+            cls=WindowEncoder, sort_keys=True,
+            indent=2, separators=(',', ':')))
 
 
-def setup_mpi():
-    if not is_mpi_env():
-        raise EnvironmentError("MPI environment required for parallel processing.")
-                                                                                    
+def _items(dict1):
+    dict2 = copy.deepcopy(dict1)
+    for key,val in dict1.iteritems():
+        if not val: dict2.pop(key)
+    return dict2.iteritems()
+
+
+def read_json(filename):
+    with open(filename, 'r') as f:
+        data = json.load(f)
+    return data
+
+
+def read_json_mpi(filename, comm):
+    rank = comm.Get_rank()
+    obj = None
+    if rank == 0:
+        obj = read_json(filename)
+    return comm.bcast(obj, root=0)
+
+
+class Struct(dict):
+    def __init__(self, *args, **kwargs):
+        super(Struct, self).__init__(*args, **kwargs)
+        self.__dict__ = self
+
