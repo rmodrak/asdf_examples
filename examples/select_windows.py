@@ -51,7 +51,7 @@ channels = {
 paths = Struct({
     'obs' : '../data/C200912240023A.obs_bp.h5',
     'syn' : '../data/C200912240023A.syn_bp.h5',
-    'output' : '../data/windows.json',
+    'output' : '../data/C200912240023A.windows.json',
     'log' : '../data/windows.log',
     })
 

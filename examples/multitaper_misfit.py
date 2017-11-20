@@ -11,24 +11,23 @@ from util import dirname, read_json_mpi, Struct
 # for consistency, filter parameters used here
 # must match those in examples/process_traces.py
 filter_parameters = {
-    'remove_response_flag': True,
-    'water_level': 100.0,
+    'interp_flag': True,
+    'interp_delta': 0.1425,
+    'interp_npts': 42000,
+    'sum_over_comp_flag': False,
+    'weight_flag': False,
     'filter_flag': True,
     'pre_filt': [0.0067, 0.01, 0.02, 0.025],
-    'starttime': 0,
-    'endtime': 6000,
-    'resample_flag': True,
-    'sampling_rate': 5,
     'taper_type': "hann",
     'taper_percentage': 0.05,
-    'rotate_flag': True,
-    'sanity_check': True,
+    'add_missing_comp_flag': False,
+    'rotate_flag': False,
     }
 
 
 # see pyadjoint documentation for parameter descriptions
 misfit_parameters = {
-    'adj_src_type': "multitaper_misfit",
+    #'adj_src_type': "multitaper_misfit",
     'min_period': 50.0,
     'max_period': 100.0,
     'lnpt': 15,
@@ -58,13 +57,13 @@ misfit_type = 'multitaper_misfit'
 paths = Struct({
     'obs' : '../data/C200912240023A.obs_bp.h5',
     'syn' : '../data/C200912240023A.syn_bp.h5',
-    'windows' : '../data/windows.json',
+    'windows' : '../data/C200912240023A.windows.json',
     })
 
 
 if __name__=='__main__':
     # this example must be invoked with MPI
-    # e.g. mpiexec -np NP calculate_misfit_asdf.py
+    # e.g. mpiexec -np NP multitaper_misfit.py
     from mpi4py import MPI
     comm = MPI.COMM_WORLD
     rank = comm.rank
