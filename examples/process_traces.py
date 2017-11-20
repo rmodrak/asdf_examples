@@ -50,7 +50,7 @@ paths_syn = Struct({
     })
 
 
-def process_traces(parameters, paths):
+def process_traces(parameters, paths, asdf_tag):
     # this example must be invoked with MPI
     # e.g. mpiexec -n NP process_traces_asdf.py
     from mpi4py import MPI
@@ -77,12 +77,12 @@ def process_traces(parameters, paths):
     # process data
     ds.process(wrapped_function,
         paths.output,
-        {'observed': 'processed'})
+        {asdf_tag: 'processed'})
 
     del ds
 
 
 if __name__=='__main__':
-    process_traces(parameters_obs, paths_obs)
-    #process_traces(parameters_syn, paths_syn)
+    process_traces(parameters_obs, paths_obs, 'observed')
+    process_traces(parameters_syn, paths_syn, 'synthetic')
 
