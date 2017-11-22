@@ -9,7 +9,7 @@ from util import dirname, read_json_mpi, Struct
 
 
 # for consistency, filter parameters used here
-# must match those in examples/process_traces.py
+# must match those in asdf_examples/process_traces.py
 filter_parameters = {
     'interp_flag': True,
     'interp_delta': 0.1425,
