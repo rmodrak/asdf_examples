@@ -41,7 +41,7 @@ flexwin_parameters = {
     }
 
 
-channels = {
+parameters_by_channel = {
     'BHR': flexwin_parameters,
     'BHT': flexwin_parameters,
     'BHZ': flexwin_parameters,
@@ -49,18 +49,16 @@ channels = {
 
 
 paths = Struct({
-    'obs' : '../data/C200912240023A.obs_bp.h5',
-    'syn' : '../data/C200912240023A.syn_bp.h5',
+    'obs' : '../data/C200912240023A.processed_observed.h5',
+    'syn' : '../data/C200912240023A.processed_synthetic.h5',
     'output' : '../data/C200912240023A.windows.json',
-    'log' : '../data/windows.log',
+    'log' : '../data/C200912240023A.windows.log',
     })
 
 merge_flag = False
 
 
-if __name__=='__main__':
-    # this example must be invoked with MPI
-    # e.g. mpiexec -np NP select_windows_asdf.py
+def select_windows(parameters, paths, merge_flag, obs_tag, syn_tag):
     from mpi4py import MPI
     comm = MPI.COMM_WORLD
     rank = comm.rank
@@ -78,15 +76,13 @@ if __name__=='__main__':
 
     # generate pyflex.Config objects
     config = {}
-    for channel, param in channels.items():
+    for channel, param in parameters.items():
         config[channel] = pyflex.Config(**param)
 
     # wrapper is required for ASDF processing
-    def wrapped_function(obs_, syn_):
-        obs_traces = getattr(obs_, 'processed')
-        syn_traces = getattr(syn_, 'processed')
+    def wrapped_function(obs, syn):
         return pytomo3d.window.window_on_stream(
-            obs_traces, syn_traces, config, station=obs_.StationXML,
+            obs[obs_tag], syn[syn_tag], config, station=obs.StationXML,
             event=event, user_modules=None,
             figure_mode=False, figure_dir=None,
             _verbose=False)
@@ -101,3 +97,6 @@ if __name__=='__main__':
         write_windows_json(paths.output, windows)
 
 
+if __name__=='__main__':
+    select_windows(parameters_by_channel, paths, merge_flag, 
+        'processed_observed', 'processed_synthetic')

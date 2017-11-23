@@ -1,5 +1,9 @@
 #!/usr/bin/env python
 
+### this script must be invoked with MPI
+### e.g. mpiexec -n NP process_traces_asdf.py
+
+
 import pytomo3d.signal
 import pyasdf
 
@@ -39,20 +43,18 @@ parameters_syn = {
 
 
 paths_obs = Struct({
-    'input' : '../data/C200912240023A.obs.h5',
-    'output' : '../data/C200912240023A.obs_bp.h5',
+    'input' : '../data/C200912240023A.observed.h5',
+    'output' : '../data/C200912240023A.processed_observed.h5',
     })
 
 
 paths_syn = Struct({
-    'input' : '../data/C200912240023A.syn.h5',
-    'output' : '../data/C200912240023A.syn_bp.h5',
+    'input' : '../data/C200912240023A.synthetic.h5',
+    'output' : '../data/C200912240023A.processed_synthetic.h5',
     })
 
 
-def process_traces(parameters, paths, asdf_tag):
-    # this example must be invoked with MPI
-    # e.g. mpiexec -n NP process_traces_asdf.py
+def process_traces(parameters, paths, tag1, tag2):
     from mpi4py import MPI
 
     cwd = dirname(__file__)
@@ -77,12 +79,12 @@ def process_traces(parameters, paths, asdf_tag):
     # process data
     ds.process(wrapped_function,
         paths.output,
-        {asdf_tag: 'processed'})
+        {tag1: tag2})
 
     del ds
 
 
 if __name__=='__main__':
-    process_traces(parameters_obs, paths_obs, 'observed')
-    process_traces(parameters_syn, paths_syn, 'synthetic')
+    process_traces(parameters_obs, paths_obs, 'observed', 'processed_observed')
+    process_traces(parameters_syn, paths_syn, 'synthetic', 'processed_synthetic')
 

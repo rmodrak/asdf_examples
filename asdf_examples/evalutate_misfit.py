@@ -8,26 +8,11 @@ from os.path import join
 from util import dirname, read_json_mpi, Struct
 
 
-# for consistency, filter parameters used here
-# must match those in asdf_examples/process_traces.py
-filter_parameters = {
-    'interp_flag': True,
-    'interp_delta': 0.1425,
-    'interp_npts': 42000,
-    'sum_over_comp_flag': False,
-    'weight_flag': False,
-    'filter_flag': True,
-    'pre_filt': [0.0067, 0.01, 0.02, 0.025],
-    'taper_type': "hann",
-    'taper_percentage': 0.05,
-    'add_missing_comp_flag': False,
-    'rotate_flag': False,
-    }
-
+misfit_type = 'multitaper_misfit'
 
 # see pyadjoint documentation for parameter descriptions
 misfit_parameters = {
-    #'adj_src_type': "multitaper_misfit",
+    #adj_src_type': "multitaper_misfit",
     'min_period': 50.0,
     'max_period': 100.0,
     'lnpt': 15,
@@ -51,19 +36,32 @@ misfit_parameters = {
     }
 
 
-misfit_type = 'multitaper_misfit'
+# for consistency, filter parameters used here
+# must match those in asdf_examples/process_traces.py
+filter_parameters = {
+    'interp_flag': True,
+    'interp_delta': 0.1425,
+    'interp_npts': 42000,
+    'sum_over_comp_flag': False,
+    'weight_flag': False,
+    'filter_flag': True,
+    'pre_filt': [0.0067, 0.01, 0.02, 0.025],
+    'taper_type': "hann",
+    'taper_percentage': 0.05,
+    'add_missing_comp_flag': False,
+    'rotate_flag': False,
+    }
 
 
 paths = Struct({
-    'obs' : '../data/C200912240023A.obs_bp.h5',
-    'syn' : '../data/C200912240023A.syn_bp.h5',
+    'obs' : '../data/C200912240023A.observed.h5',
+    'syn' : '../data/C200912240023A.synthetic.h5',
     'windows' : '../data/C200912240023A.windows.json',
     })
 
 
-if __name__=='__main__':
-    # this example must be invoked with MPI
-    # e.g. mpiexec -np NP multitaper_misfit.py
+def evaluate_misfit(misfit_type, misfit_parameters, filter_parameters, paths,
+                    obs_tag, syn_tag): 
     from mpi4py import MPI
     comm = MPI.COMM_WORLD
     rank = comm.rank
@@ -75,7 +73,7 @@ if __name__=='__main__':
     obs = pyasdf.ASDFDataSet(fullpath, compression=None, mode="a")
     event = obs.events[0]
 
-    # read syntheics
+    # read synthetics
     fullpath = join(cwd, paths.syn)
     syn = pyasdf.ASDFDataSet(fullpath, compression=None, mode="a")
 
@@ -87,14 +85,12 @@ if __name__=='__main__':
     config = pyadjoint.Config(**misfit_parameters)
 
     # wrapper is required for ASDF processing
-    def wrapped_function(obs_, syn_):
-        obs_traces = getattr(obs_, 'processed')
-        syn_traces = getattr(syn_, 'processed')
+    def wrapped_function(obs, syn):
         # TODO: modify pytomo3d to make the following
-        # function call more readable
+        # function call more readable?
         return pytomo3d.adjoint.calculate_and_process_adjsrc_on_stream(
-            obs_traces, syn_traces, windows[obs_._station_name],
-            obs_.StationXML, config, event,
+            obs[obs_tag], syn[syn_tag], windows[obs._station_name],
+            obs.StationXML, config, event,
             misfit_type, filter_parameters,
             figure_mode=False, figure_dir=None)
 
@@ -104,5 +100,10 @@ if __name__=='__main__':
 
     # save results
     if rank==0:
-        print adjoint_sources
+        print adjoint_sources[u'IU.AFI'][0]
+
+
+if __name__=='__main__':
+    evaluate_misfit(misfit_type, misfit_parameters, filter_parameters, paths, 
+        'processed_observed', 'processed_synthetic') 
 
