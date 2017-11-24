@@ -103,23 +103,16 @@ def write_adjoint_traces(misfit_type, misfit_parameters, filter_parameters, path
     adjoint_sources = obs.process_two_files_without_parallel_output(
         syn, wrapped_function)
 
-    if 1==1:
-        raise NotImplementedError
+    if rank==0:
         # save as ASDF waveforms
-        ds = pyasdf.ASDFDataSet(paths.adjoint_sources, compression=None, mode="a")
+        ds = pyasdf.ASDFDataSet(paths.adjoint_sources, mpi=False, mode="a")
         tag = 'processed_adjoint'
-        add_adjoint_source_waveforms(ds, adjoint_sources, event, tag)
-        del ds
-    else:
-        # save as ASDF auxiliary data
-        ds = pyasdf.ASDFDataSet(paths.adjoint_sources, compression=None, mode="a")
-        tag = 'processed_adjoint'
-        add_adjoint_source_auxiliary_data(ds, adjoint_sources, tag)
+        if rank==0: add_adjoint_source_waveforms(ds, adjoint_sources, event, tag)
         del ds
 
-    # write misfit
-    if rank==0:
-         pass
+        # write misfit
+        pass
+
 
 
 if __name__=='__main__':

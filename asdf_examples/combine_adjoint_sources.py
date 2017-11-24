@@ -6,6 +6,7 @@ import pyadjoint
 
 from os.path import join
 from util import dirname, read_json_mpi, Struct
+from util import add_adjoint_source_waveforms, add_adjoint_source_auxiliary_data
 
 
 paths = Struct({
@@ -44,17 +45,16 @@ def combine_adjoint_sources(paths, tag, rotate=True, auxiliary_data=False):
     if rotate:
         rotate_traces()
 
-    if rank==0
-        if auxiliary_data:
-            # save results as ASDF auxiliary data
-            write_adjoint_source_auxiliary_data(paths.output adjoint_sources)
-        else:
-            # save results as ASDF waveforms
-            write_adjoint_source_waveforms(paths.output, adjoint_souces)
+    if 1==1:
+        # save results as ASDF waveforms
+        add_adjoint_source_waveforms(paths.output, adjoint_souces)
+    else:
+        # save results as ASDF auxiliary data
+        add_adjoint_source_auxiliary_data(paths.output adjoint_sources)
 
 
 if __name__=='__main__':
-    write_adjoint_traces(paths, 'processed_adjoint'):
+    combine_adjoint_traces(paths, 'processed_adjoint'):
 
 
 
