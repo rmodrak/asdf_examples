@@ -65,3 +65,21 @@ class Struct(dict):
         super(Struct, self).__init__(*args, **kwargs)
         self.__dict__ = self
 
+
+def add_adjoint_source_waveforms(ds, adjoint_sources, event, tag):
+    import obspy
+    for station, channels in adjoint_sources.items():
+        for adjoint_source in channels:
+            trace = obspy.core.trace.Trace(adjoint_source.adjoint_source,
+                header=obspy.core.trace.Stats({
+                    'network':adjoint_source.network,
+                    'station':adjoint_source,
+                    'location':adjoint_source.location}))
+            ds.add_waveforms(trace, tag, event)
+
+
+def add_adjoint_source_auxiliary_data(ds, adjoint_sources):
+    for station, channels in adjoint_sources.items():
+        for adjoint_source in channels:
+            adjoint_source.write_asdf(ds)
+
