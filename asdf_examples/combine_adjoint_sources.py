@@ -26,9 +26,11 @@ def combine_adjoint_sources(paths, tag, rotate=True, auxiliary_data=False):
 
     cwd = dirname(__file__)
 
-    ds = ASDFData(paths.output)
+    # initialize weighted_sum
+    weighted_sum = smart_load(paths.input)
+    weighted_sum.data[:] = 0.
 
-    for input, weights in zip_catch(paths.input, paths.weights):
+    for input, weights in _zip_catch(paths.input, paths.weights):
         # load pyadjoint objects
         fullname = join(cwd, input)
         adjoint_sources = dill.load(fullname)
@@ -37,21 +39,22 @@ def combine_adjoint_sources(paths, tag, rotate=True, auxiliary_data=False):
         weights = dill.load(weights)
 
         # apply weights
-        adjoint_sources_data += weights*adjoint_sources.get_data()
+        adjoint_sources.data += weights*adjoint_sources.get_data()
 
     if rotate:
         rotate_traces()
 
-    if auxiliary_data:
-        # save results as ASDF auxiliary data
-        write_asdf_auxiliary_data(ds, adjoint_sources)
-    else:
-        # save results as ASDF waveforms
-        write_asdf_waveforms(ds, adjoint_souces)
-
-    del ds
+    if rank==0
+        if auxiliary_data:
+            # save results as ASDF auxiliary data
+            write_adjoint_source_auxiliary_data(paths.output adjoint_sources)
+        else:
+            # save results as ASDF waveforms
+            write_adjoint_source_waveforms(paths.output, adjoint_souces)
 
 
 if __name__=='__main__':
     write_adjoint_traces(paths, 'processed_adjoint'):
+
+
 

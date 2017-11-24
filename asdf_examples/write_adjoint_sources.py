@@ -1,11 +1,15 @@
 #!/usr/bin/env python
 
+import dill as pickle
+import json
+
 import pytomo3d.adjoint
 import pyasdf
 import pyadjoint
 
 from os.path import join
 from util import dirname, read_json_mpi, Struct
+from util import add_adjoint_source_waveforms, add_adjoint_source_auxiliary_data
 
 
 misfit_type = 'multitaper_misfit'
@@ -54,13 +58,15 @@ filter_parameters = {
 
 
 paths = Struct({
-    'obs' : '../data/C200912240023A.observed.h5',
-    'syn' : '../data/C200912240023A.synthetic.h5',
+    'obs' : '../data/C200912240023A.processed_observed.h5',
+    'syn' : '../data/C200912240023A.processed_synthetic.h5',
     'windows' : '../data/C200912240023A.windows.json',
+    'misfit' : '../data/C200912240023A.misfit.json',
+    'adjoint_sources' : '../data/C200912240023A.adjoint_sources.h5',
     })
 
 
-def evaluate_misfit(misfit_type, misfit_parameters, filter_parameters, paths,
+def write_adjoint_traces(misfit_type, misfit_parameters, filter_parameters, paths,
                     obs_tag, syn_tag): 
     from mpi4py import MPI
     comm = MPI.COMM_WORLD
@@ -94,16 +100,29 @@ def evaluate_misfit(misfit_type, misfit_parameters, filter_parameters, paths,
             misfit_type, filter_parameters,
             figure_mode=False, figure_dir=None)
 
-    # evaluate misfit
     adjoint_sources = obs.process_two_files_without_parallel_output(
         syn, wrapped_function)
 
-    # save results
+    if 1==1:
+        raise NotImplementedError
+        # save as ASDF waveforms
+        ds = pyasdf.ASDFDataSet(paths.adjoint_sources, compression=None, mode="a")
+        tag = 'processed_adjoint'
+        add_adjoint_source_waveforms(ds, adjoint_sources, event, tag)
+        del ds
+    else:
+        # save as ASDF auxiliary data
+        ds = pyasdf.ASDFDataSet(paths.adjoint_sources, compression=None, mode="a")
+        tag = 'processed_adjoint'
+        add_adjoint_source_auxiliary_data(ds, adjoint_sources, tag)
+        del ds
+
+    # write misfit
     if rank==0:
-        print adjoint_sources[u'IU.AFI'][0]
+         pass
 
 
 if __name__=='__main__':
-    evaluate_misfit(misfit_type, misfit_parameters, filter_parameters, paths, 
-        'processed_observed', 'processed_synthetic') 
+    write_adjoint_traces(misfit_type, misfit_parameters, filter_parameters, paths, 
+        'processed_observed', 'processed_synthetic')
 
