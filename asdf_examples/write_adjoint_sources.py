@@ -107,7 +107,7 @@ def write_adjoint_traces(misfit_type, misfit_parameters, filter_parameters, path
         # save as ASDF waveforms
         ds = pyasdf.ASDFDataSet(paths.adjoint_sources, mpi=False, mode="a")
         tag = 'processed_adjoint'
-        if rank==0: add_adjoint_source_waveforms(ds, adjoint_sources, event, tag)
+        add_adjoint_source_waveforms(ds, adjoint_sources, tag)
         del ds
 
         # write misfit

@@ -66,8 +66,9 @@ class Struct(dict):
         self.__dict__ = self
 
 
-def add_adjoint_source_waveforms(ds, adjoint_sources, event, tag):
+def add_adjoint_source_waveforms(ds, adjoint_sources, tag):
     import obspy
+
     for adjoint_source in adjoint_sources.values():
         data = []
         for window in adjoint_source:
@@ -81,7 +82,7 @@ def add_adjoint_source_waveforms(ds, adjoint_sources, event, tag):
                 'starttime':window.starttime,
                 'sampling_rate':window.dt}))
 
-        ds.add_waveforms(trace, tag, event)
+        ds.add_waveforms(trace, tag)
 
 
 def add_adjoint_source_auxiliary_data(ds, adjoint_sources):
