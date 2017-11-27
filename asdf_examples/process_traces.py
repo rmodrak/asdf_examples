@@ -1,7 +1,7 @@
 #!/usr/bin/env python
 
 ### this script must be invoked with MPI
-### e.g. mpiexec -n NP process_traces_asdf.py
+### e.g. mpiexec -n NP process_traces.py
 
 
 import pytomo3d.signal

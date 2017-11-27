@@ -1,5 +1,9 @@
 #!/usr/bin/env python
 
+### this script must be invoked with MPI
+### e.g. mpiexec -n NP select_windows.py
+
+
 import pytomo3d.window
 import pyasdf
 import pyflex

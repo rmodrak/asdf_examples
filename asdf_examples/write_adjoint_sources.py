@@ -1,5 +1,10 @@
 #!/usr/bin/env python
 
+
+### this script must be invoked with MPI
+### e.g. mpiexec -n NP write_adjoint_sources.py
+
+
 import dill as pickle
 import json
 
