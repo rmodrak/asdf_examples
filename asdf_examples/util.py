@@ -71,22 +71,25 @@ def add_adjoint_source_waveforms(ds, adjoint_sources, tag):
 
     for adjoint_source in adjoint_sources.values():
         data = []
-        for window in adjoint_source:
-            data += [window.adjoint_source]
-
-        trace = obspy.core.trace.Trace(sum(data),
-            header=obspy.core.trace.Stats({
-                'network':window.network,
-                'station':window.station,
-                'location':window.location,
-                'starttime':window.starttime,
-                'sampling_rate':window.dt}))
-
-        ds.add_waveforms(trace, tag)
+        for channel in adjoint_source:
+            trace = obspy.core.trace.Trace(channel.adjoint_source,
+                header=obspy.core.trace.Stats({
+                    'network':channel.network,
+                    'station':channel.station,
+                    'location':channel.location,
+                    'starttime':channel.starttime,
+                    'channel':channel.component,
+                    'sampling_rate':channel.dt}))
+            ds.add_waveforms(trace, tag)
 
 
 def add_adjoint_source_auxiliary_data(ds, adjoint_sources):
     for station, channels in adjoint_sources.items():
         for adjoint_source in channels:
             adjoint_source.write_asdf(ds)
+
+
+def zip_catch(*args):
+    # TODO: add error catching
+    return zip(*args)
 
