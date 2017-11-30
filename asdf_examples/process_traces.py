@@ -55,6 +55,18 @@ paths_syn = Struct({
 
 
 def process_traces(parameters, paths, tag1, tag2):
+    """
+    Performs bandpass filtering and other data processing operations on 
+    ASDF data; writes processed waveforms in a new ASDF file or under a new 
+    ASDF tag
+
+    :param parameters: dictionary passed directly to pytomo3d
+    :param paths.input: input ASDF filename
+    :param paths.output: output ASDF filename
+    :param tag1: input ASDF waveforms are read using this tag
+    :param tag2: output ASDF waveforms are written using this tag
+    """
+
     from mpi4py import MPI
 
     cwd = dirname(__file__)

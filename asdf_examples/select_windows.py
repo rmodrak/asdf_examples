@@ -63,6 +63,19 @@ merge_flag = False
 
 
 def select_windows(parameters, paths, merge_flag, obs_tag, syn_tag):
+    """
+    Selects windows by comparing observed and synthetic traces;
+    writes results to a json file
+
+    :param parameters: dictionary passed directly to pyflex.Config
+    :param paths.obs: ASDF observed data filename
+    :param paths.syn: ASDF synthetic data filename
+    :param paths.output: windows will be written to a JSON file with this name
+    :param paths.log: information about the quantity and quality of windows
+        will be written to a JSON file with this name
+    :param obs_tag: observed data are read using this ASDF tag
+    :param syn_tag: synthetic data are read using this ASDF tag
+    """
     from mpi4py import MPI
     comm = MPI.COMM_WORLD
     rank = comm.rank
@@ -104,3 +117,4 @@ def select_windows(parameters, paths, merge_flag, obs_tag, syn_tag):
 if __name__=='__main__':
     select_windows(parameters_by_channel, paths, merge_flag, 
         'processed_observed', 'processed_synthetic')
+

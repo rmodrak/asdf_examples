@@ -2,6 +2,8 @@
 
 
 ### DO NOT INVOKE WITH MPI
+### Unlike the other scripts in asdf_examples, this one is meant to be invoked
+### without MPI, e.g. ./combine_adjoint_sources.py
 
 import copy
 import json
@@ -21,14 +23,27 @@ paths = Struct({
                 #'../data/C200912240023A.processed_adjoint_40_100.h5',
                 #'../data/C200912240023A.processed_adjoint_90_250.h5']
     'weights' : ['../data/C200912240023A.weights.json',],
-                 #'../data/C200912240023A.weights_40_100.h5',
-                 #'../data/C200912240023A.weights_90_250.h5']
+                 #'../data/C200912240023A.weights_sw.h5',
     'output' : '../data/C200912240023A.adjoint_sources_sum.h5',
     })
 
 
 
 def combine_adjoint_sources(paths, tag, rotate=True, auxiliary_data=False):
+    """ 
+    Sums adjoint sources from different ASDF files in a linear combination with
+    user-supplied weights. Can be useful, for example, if previous data 
+    processing, window selection, and misfit measurements steps were carried out
+    separately for different pass bands (e.g. long period, short period) or 
+    different phases (e.g. body waves, surface waves).
+
+    param paths.input: ASDF files containing adjoint sources
+    type paths.input: list
+    param paths.weight: corresponding list of JSON files containing weights
+    type paths.weight: list
+    param paths.output: summed adjoint sources are written to this ASDF file
+    type paths.output: str
+    """
 
     cwd = dirname(__file__)
 

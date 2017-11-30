@@ -73,6 +73,23 @@ paths = Struct({
 
 def write_adjoint_traces(misfit_type, misfit_parameters, filter_parameters, paths,
                     obs_tag, syn_tag): 
+    """
+    Makes misfit measurements using observed and synthetic data;
+    writes out misfit values and corresponding "adjoint sources"
+
+    :param misfit_type: type of data misfit function, 
+         e.g. waveform_difference, multitaper_misfit
+    :param misfit_parameters: dictionary passed directly to pyadjoint.Config
+    :param paths.obs: ASDF observed data filename
+    :param paths.syn: ASDF synthetic data filename
+    :param paths.windows: JSON windows filename
+    :param paths.adjoint_sources: adjoint_sources will be written to an ASDF
+        file with this name
+    :param paths.misfit: misfit values will be written a JSON file with this name
+    :param obs_tag: observed data are read using this ASDF tag
+    :param syn_tag: synthetic data are read using this ASDF tag
+    """
+
     from mpi4py import MPI
     comm = MPI.COMM_WORLD
     rank = comm.rank
@@ -117,7 +134,6 @@ def write_adjoint_traces(misfit_type, misfit_parameters, filter_parameters, path
 
         # write misfit
         pass
-
 
 
 if __name__=='__main__':
